@@ -69,6 +69,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap-1bc8a17f135ab3d594c857e9f48e611b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -123,6 +152,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>The <code>echo: false</code> option disables the printing of code (only output is displayed).</p>
+</section>
+<section id="leer-datos" class="level1">
+<h1>Leer datos</h1>
+<p>datos &lt;- read.csv(C:/Users/LENOVO/Documents/Libro1.csv)</p>
+</section>
+<section id="asegurar-que-la-dosis-sea-un-factor-no-número" class="level1">
+<h1>Asegurar que la dosis sea un factor (no número)</h1>
+<p>datos<span class="math inline">\(Dosis &lt;- as.factor(datos\)</span>Dosis)</p>
+</section>
+<section id="anova-modelo-con-un-solo-factor" class="level1">
+<h1>ANOVA: modelo con un solo factor</h1>
+<p>modelo &lt;- aov(Rendimiento ~ Dosis, data = datos)</p>
+</section>
+<section id="resultado-del-anova" class="level1">
+<h1>Resultado del ANOVA</h1>
+<p>summary(modelo)</p>
+</section>
+<section id="prueba-de-comparaciones-múltiples-tukey" class="level1">
+<h1>Prueba de comparaciones múltiples (Tukey)</h1>
+<p>TukeyHSD(modelo)</p>
+</section>
+<section id="gráfico-de-medias-por-dosis" class="level1">
+<h1>Gráfico de medias por dosis</h1>
+<p>boxplot(Rendimiento ~ Dosis, data = datos, col = c(“lightblue”, “lightgreen”, “salmon”), main = “Efecto de la dosis de fertilizante nitrogenado”, xlab = “Dosis (kg/ha)”, ylab = “Rendimiento”)</p>
 </section>
 
 </main>

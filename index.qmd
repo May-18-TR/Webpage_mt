@@ -24,3 +24,25 @@ You can add options to executable code like this
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
+
+# Leer datos
+datos <- read.csv(C:/Users/LENOVO/Documents/Libro1.csv)
+
+# Asegurar que la dosis sea un factor (no número)
+datos$Dosis <- as.factor(datos$Dosis)
+
+# ANOVA: modelo con un solo factor
+modelo <- aov(Rendimiento ~ Dosis, data = datos)
+
+# Resultado del ANOVA
+summary(modelo)
+
+# Prueba de comparaciones múltiples (Tukey)
+TukeyHSD(modelo)
+
+# Gráfico de medias por dosis
+boxplot(Rendimiento ~ Dosis, data = datos,
+        col = c("lightblue", "lightgreen", "salmon"),
+        main = "Efecto de la dosis de fertilizante nitrogenado",
+        xlab = "Dosis (kg/ha)", ylab = "Rendimiento")
+        
