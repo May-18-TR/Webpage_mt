@@ -1,14 +1,3 @@
 project:
   type: website
   output-dir: docs
-
-website:
-  title: "Modelos lineales mixtos"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Inicio
-
-format:
-  html:
-    theme: cosmo
