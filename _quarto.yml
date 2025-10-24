@@ -1,3 +1,14 @@
 project:
   type: website
   output-dir: docs
+
+website:
+  title: "Webpage_mt"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Inicio
+
+format:
+  html:
+    theme: cosmo
