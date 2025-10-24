@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "Prueba de Mayra"
+  title: "Modelos lineales mixtos"
   navbar:
     left:
       - href: index.qmd
