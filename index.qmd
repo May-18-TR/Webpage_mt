@@ -25,24 +25,140 @@ You can add options to executable code like this
 
 The `echo: false` option disables the printing of code (only output is displayed).
 
-# Leer datos
-datos <- read.csv(C:/Users/LENOVO/Documents/Libro1.csv)
+---
+title: "Modelos lineales mixtos"
+author: "Mayra Tarrillo"
+format: html
+---
 
-# Asegurar que la dosis sea un factor (no número)
-datos$Dosis <- as.factor(datos$Dosis)
+# Librerías
+```{r}
+#| warning: false
+#| message: false
 
-# ANOVA: modelo con un solo factor
-modelo <- aov(Rendimiento ~ Dosis, data = datos)
+library(tidyverse)
+library(googlesheets4)
+library(lme4)
+library(emmeans)
+library(car)
+library(multcomp)
+library(multcompView)
+library(inti)
+```
 
-# Resultado del ANOVA
-summary(modelo)
+# Cargar base de datos
+```{r}
+#| eval: false
 
-# Prueba de comparaciones múltiples (Tukey)
-TukeyHSD(modelo)
+library(readr)
+fb <- read_csv("C:/Users/LENOVO/Downloads/LA MOLINA 2014 POTATO WUE (FB) - fb.csv")
+```
 
-# Gráfico de medias por dosis
-boxplot(Rendimiento ~ Dosis, data = datos,
-        col = c("lightblue", "lightgreen", "salmon"),
-        main = "Efecto de la dosis de fertilizante nitrogenado",
-        xlab = "Dosis (kg/ha)", ylab = "Rendimiento")
-        
+**Nota:** Para que funcione en GitHub, necesitas subir el archivo CSV a tu repositorio y cambiar la ruta.
+
+# Modelo
+
+La ecuación del modelo es:
+
+$$ wue_{tuber} = \mu + bloque + riego + geno + riego*geno + e $$ 
+
+# Análisis de varianza
+```{r}
+#| eval: false
+
+md <- lmer(formula = twue ~ 0 + (1|bloque) + riego*geno, data = fb)
+anova(md)
+Anova(md, type = 3)
+```
+
+# Comparación de medias
+
+## Medias ajustadas y prueba de Tukey
+```{r}
+#| eval: false
+
+# Medias ajustadas para la interacción riego:geno
+emm <- emmeans(md, ~riego*geno)
+
+# Comparación de medias con ajuste de Tukey
+comp <- pairs(emm, adjust = "tukey")
+
+# Convertir en tabla
+comp_tab <- summary(comp)
+
+# Extraer los p-valores
+pvals <- comp_tab$p.value
+
+# Asignar nombres
+names(pvals) <- as.character(comp_tab$contrast)
+
+# Crear letras
+letras <- multcompLetters(pvals)
+letras
+```
+
+## Crear tabla con letras
+```{r}
+#| eval: false
+
+# Limpieza del data frame con letras
+letras_df <- data.frame(
+  tratamiento = names(letras$Letters),
+  letra = letras$Letters,
+  row.names = NULL
+)
+
+# Separar la columna tratamiento en riego y geno
+letras_df <- letras_df %>%
+  separate(tratamiento, into = c("riego", "geno"), sep = ",") %>%
+  mutate(riego = gsub("\\(|\\)", "", riego),
+         geno = gsub("\\(|\\)", "", geno))
+
+letras_df
+```
+
+## Gráfico con ggplot2
+```{r}
+#| eval: false
+#| fig-width: 10
+#| fig-height: 6
+
+# Calcular las medias ajustadas
+emm <- emmeans(md, ~riego*geno)
+emm_df <- as.data.frame(emm)
+
+# Agregar las letras al data frame
+emm_df$letra <- letras$Letters[match(paste(emm_df$riego, emm_df$geno, sep = ","), 
+                                      names(letras$Letters))]
+
+# Crear el gráfico
+ggplot(emm_df, aes(x = geno, y = emmean, fill = riego)) +
+  geom_col(position = position_dodge(width = 0.8)) +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE),
+                width = 0.2, position = position_dodge(width = 0.8)) +
+  geom_text(aes(label = letra, y = emmean + SE + 0.05),
+            position = position_dodge(width = 0.8),
+            size = 3, vjust = 0, angle = 90) +
+  labs(x = "Genotipos", 
+       y = "TWUE (eficiencia del uso del agua total)",
+       fill = "Riego") +
+  theme_classic(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Gráfico con el paquete inti
+```{r}
+#| eval: false
+#| fig-width: 12
+#| fig-height: 6
+
+# Limpiar nombres de letras
+nombres_letras <- trimws(names(letras$Letters))
+emm_df$id <- paste(emm_df$riego, emm_df$geno)
+emm_df$letra <- letras$Letters[match(emm_df$id, nombres_letras)]
+
+# Crear el plot
+emm_df %>%
+  plot_smr(x = "geno", y = "emmean", group = "riego",
+           error = "SE", sig = "letra")
+```
