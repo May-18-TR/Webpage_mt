@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Modelos lineales mixtos",
+    "section": "",
+    "text": "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see https://quarto.org."
+  },
+  {
+    "objectID": "index.html#quarto",
+    "href": "index.html#quarto",
+    "title": "Modelos lineales mixtos",
+    "section": "",
+    "text": "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see https://quarto.org."
+  },
+  {
+    "objectID": "index.html#running-code",
+    "href": "index.html#running-code",
+    "title": "Modelos lineales mixtos",
+    "section": "Running Code",
+    "text": "Running Code\nWhen you click the Render button a document will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2\n\n\nYou can add options to executable code like this\n\n\n[1] 4\n\n\nThe echo: false option disables the printing of code (only output is displayed)."
+  },
+  {
+    "objectID": "index.html#medias-ajustadas-y-prueba-de-tukey",
+    "href": "index.html#medias-ajustadas-y-prueba-de-tukey",
+    "title": "Modelos lineales mixtos",
+    "section": "Medias ajustadas y prueba de Tukey",
+    "text": "Medias ajustadas y prueba de Tukey\n\n# Medias ajustadas para la interacción riego:geno\nemm &lt;- emmeans(md, ~riego*geno)\n\n# Comparación de medias con ajuste de Tukey\ncomp &lt;- pairs(emm, adjust = \"tukey\")\n\n# Convertir en tabla\ncomp_tab &lt;- summary(comp)\n\n# Extraer los p-valores\npvals &lt;- comp_tab$p.value\n\n# Asignar nombres\nnames(pvals) &lt;- as.character(comp_tab$contrast)\n\n# Crear letras\nletras &lt;- multcompLetters(pvals)\nletras"
+  },
+  {
+    "objectID": "index.html#crear-tabla-con-letras",
+    "href": "index.html#crear-tabla-con-letras",
+    "title": "Modelos lineales mixtos",
+    "section": "Crear tabla con letras",
+    "text": "Crear tabla con letras\n\n# Limpieza del data frame con letras\nletras_df &lt;- data.frame(\n  tratamiento = names(letras$Letters),\n  letra = letras$Letters,\n  row.names = NULL\n)\n\n# Separar la columna tratamiento en riego y geno\nletras_df &lt;- letras_df %&gt;%\n  separate(tratamiento, into = c(\"riego\", \"geno\"), sep = \",\") %&gt;%\n  mutate(riego = gsub(\"\\\\(|\\\\)\", \"\", riego),\n         geno = gsub(\"\\\\(|\\\\)\", \"\", geno))\n\nletras_df"
+  },
+  {
+    "objectID": "index.html#gráfico-con-ggplot2",
+    "href": "index.html#gráfico-con-ggplot2",
+    "title": "Modelos lineales mixtos",
+    "section": "Gráfico con ggplot2",
+    "text": "Gráfico con ggplot2\n\n# Calcular las medias ajustadas\nemm &lt;- emmeans(md, ~riego*geno)\nemm_df &lt;- as.data.frame(emm)\n\n# Agregar las letras al data frame\nemm_df$letra &lt;- letras$Letters[match(paste(emm_df$riego, emm_df$geno, sep = \",\"), \n                                      names(letras$Letters))]\n\n# Crear el gráfico\nggplot(emm_df, aes(x = geno, y = emmean, fill = riego)) +\n  geom_col(position = position_dodge(width = 0.8)) +\n  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE),\n                width = 0.2, position = position_dodge(width = 0.8)) +\n  geom_text(aes(label = letra, y = emmean + SE + 0.05),\n            position = position_dodge(width = 0.8),\n            size = 3, vjust = 0, angle = 90) +\n  labs(x = \"Genotipos\", \n       y = \"TWUE (eficiencia del uso del agua total)\",\n       fill = \"Riego\") +\n  theme_classic(base_size = 14) +\n  theme(axis.text.x = element_text(angle = 45, hjust = 1))"
+  },
+  {
+    "objectID": "index.html#gráfico-con-el-paquete-inti",
+    "href": "index.html#gráfico-con-el-paquete-inti",
+    "title": "Modelos lineales mixtos",
+    "section": "Gráfico con el paquete inti",
+    "text": "Gráfico con el paquete inti\n\n# Limpiar nombres de letras\nnombres_letras &lt;- trimws(names(letras$Letters))\nemm_df$id &lt;- paste(emm_df$riego, emm_df$geno)\nemm_df$letra &lt;- letras$Letters[match(emm_df$id, nombres_letras)]\n\n# Crear el plot\nemm_df %&gt;%\n  plot_smr(x = \"geno\", y = \"emmean\", group = \"riego\",\n           error = \"SE\", sig = \"letra\")"
+  }
+]
